@@ -1,0 +1,25 @@
+/* styles.css */
+
+/* Example list styling */
+.list-group {
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.list-group-item {
+    display: grid;
+    grid-template-columns: 1fr auto; /* Two columns: content and action */
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+/* Content container */
+.list-item-content {
+    grid-column: 1; /* Content in the first column */
+}
+
+/* Action container */
+.list-item-action {
+    grid-column: 2; /* Action (Delete button) in the second column */
+}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example Table</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Custom CSS for styling -->
+    <style>
+        .input-form {
+            margin-bottom: 20px;
+            background-color: #f8f9fa; /* Light gray background color */
+            border: 1px solid #ced4da; /* Light gray border */
+            padding: 20px; /* Add some padding for spacing */
+            border-radius: 5px; /* Rounded corners */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Drop shadow for depth */
+        }
+
+        .name-input {
+            max-width: 300px; /* Adjust the width as needed */
+        }
+
+        .list-container {
+            background-color: #f8f9fa; /* Light gray background color */
+            border: 1px solid #ced4da; /* Light gray border */
+            border-radius: 5px; /* Rounded corners */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Drop shadow for depth */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Example Table</h1>
+
+        <!-- Form to Create an Example -->
+        <form id="createExampleForm" class="input-form">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" class="form-control name-input" id="name" name="name" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+
+        <!-- List of Examples -->
+        <div class="list-container">
+            <ul id="exampleList" class="list-group">
+                {% for example in examples %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ example.name }}
+                        <button class="btn btn-danger btn-sm delete-example" data-id="{{ example.id }}">Delete</button>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Include Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <!-- Custom JavaScript with Axios -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Handle form submission to create a new example
+            document.getElementById('createExampleForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                var name = document.getElementById('name').value;
+                
+                axios.post('/examples', { name: name })
+                    .then(function (response) {
+                        if (response.status === 204) {
+                            location.reload(); // Reload the page to update the list
+                        } else {
+                            alert('Failed to create example.');
+                        }
+                    })
+                    .catch(function (error) {
+                        console.error('An error occurred:', error);
+                    });
+            });
+
+            // Handle button clicks to delete an example
+            var deleteButtons = document.querySelectorAll('.delete-example');
+            deleteButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    var id = button.getAttribute('data-id');
+                    axios.delete('/examples/' + id)
+                        .then(function (response) {
+                            if (response.status === 204) {
+                                location.reload(); // Reload the page to update the list
+                            } else {
+                                alert('Failed to delete example.');
+                            }
+                        })
+                        .catch(function (error) {
+                            console.error('An error occurred:', error);
+                        });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

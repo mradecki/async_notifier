@@ -52,5 +52,15 @@ services:
     depends_on:
       - postgres
 
+  api:
+    build:
+      context: ./api
+    environment:
+      DB_URI: "postgresql://username:password@postgres:5432/mydatabase"
+    depends_on:
+      - postgres
+    ports:
+      - "80:80"
+
 volumes:
   postgres-data:

@@ -1,40 +1,33 @@
-import os
-import time
 import random
-from sqlalchemy import create_engine, Column, Integer, String, MetaData
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+import time
 
-DATABASE_URL = os.environ["DB_URI"]
+from config import settings
+from database import init_db, robust
+from models import Base, Example
 
-Base = declarative_base()
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine)
 
-class Example(Base):
-    __tablename__ = 'example'
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-
-def insert_row():
-    session = SessionLocal()
+@robust
+def insert_row(session):
     try:
         new_entry = Example(name=f"Random name {random.randint(1, 1000)}")
         session.add(new_entry)
         session.commit()
         print(f"Inserted row with ID: {new_entry.id}")
     except Exception as e:
+        session.rollback()
         print(f"Error: {e}")
-    finally:
-        session.close()
+        raise  # Re-raise the exception for the decorator to catch and handle
 
 def main():
+    engine, SessionLocal = init_db()
+
     while True:
-        insert_row()
-        sleep_time = random.randint(5, 15)
-        print(f"Sleeping for {sleep_time} seconds...")
-        time.sleep(sleep_time)
+        session = SessionLocal()  # Create a session for this iteration
+        insert_row(session)
+        session.close()  # Close the session after using it
+
+        print(f"Sleeping for {settings.sleep_time} seconds...")
+        time.sleep(settings.sleep_time)
 
 if __name__ == "__main__":
     main()

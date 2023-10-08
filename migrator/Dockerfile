@@ -9,4 +9,4 @@ COPY . .
 
 ENV PYTHONUNBUFFERED 1
 
-CMD ["python", "start_migration.py"]
+CMD ["python", "main.py"]
