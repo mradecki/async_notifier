@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  rabbitmq:
+    image: "rabbitmq:management"
+    ports:
+      - "15672:15672"  # RabbitMQ management interface
+      - "5672:5672"   # RabbitMQ broker
+
+  app:
+    build:
+      context: ./bridge
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      DB_URI: "postgresql+psycopg2://username:password@postgres:5432/mydatabase"
+      RABBITMQ_URI: "amqp://guest:guest@rabbitmq:5672/%2F"
+    command: ["wait-for-it", "rabbitmq:5672", "--", "python", "main.py"]
+
+  migrator:  
+    build:
+      context: ./migrator  
+    depends_on:
+      - postgres
+    environment:
+      DB_URI: "postgresql+psycopg2://username:password@postgres:5432/mydatabase"
+
+  listener:
+    build:
+      context: ./listener
+    depends_on:
+      - rabbitmq
+    command: ["wait-for-it", "rabbitmq:5672", "--", "python", "main.py"]
+
+  producer:
+    build:
+      context: ./producer
+    environment:
+      DB_URI: "postgresql://username:password@postgres:5432/mydatabase"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres-data:
